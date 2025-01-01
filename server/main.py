@@ -42,38 +42,80 @@ Session(app)
 
 # Helper Functions
 def generate_github_url(state):
-    """Generate GitHub OAuth URL with necessary query parameters."""
+    """
+    Generate GitHub OAuth URL with necessary query parameters.
+    
+    Args:
+        state (str): A unique state token to prevent CSRF attacks.
+    
+    Returns:
+        str: A URL to initiate GitHub OAuth login.
+    """
     return f"{GITHUB_AUTH_URL}?client_id={os.environ['GITHUB_CLIENT_ID']}&redirect_uri={os.environ['BASE_REDIRECT_URI']}/api/v1/oauth/github/callback&scope=user:email&state={state}&allow_signup=true"
 
 def fetch_github_user(access_token):
-    """Fetch GitHub user data using the access token."""
+    """
+    Fetch GitHub user data using the access token.
+    
+    Args:
+        access_token (str): GitHub access token.
+    
+    Returns:
+        dict: GitHub user data or error message if the token is invalid.
+    """
     response = requests.get(GITHUB_USER_URL, headers={'Authorization': f'token {access_token}'})
     if response.status_code == 401:
         return jsonify({'error': 'Invalid access token, please try again.'})
     return response.json()
 
 def fetch_github_user_email(access_token):
-    """Fetch the primary email of the GitHub user."""
+    """
+    Fetch the primary email of the GitHub user.
+    
+    Args:
+        access_token (str): GitHub access token.
+    
+    Returns:
+        str: The primary email of the user, or None if not found.
+    """
     response = requests.get(GITHUB_EMAIL_URL, headers={'Authorization': f'token {access_token}'})
     response.raise_for_status()
     emails = response.json()
     return next((email['email'] for email in emails if email.get('primary')), None)
 
 def validate_email_format(email):
-    """Validate email format."""
+    """
+    Validate the format of an email address.
+    
+    Args:
+        email (str): The email address to be validated.
+    
+    Returns:
+        bool: True if the email format is valid, False otherwise.
+    """
     return '@' in email and '.' in email and ' ' not in email
 
 # Routes
 @app.route('/')
 def home():
-    """Home route to handle authenticated and unauthenticated users."""
+    """
+    Home route to handle authenticated and unauthenticated users.
+    
+    Returns:
+        str: Rendered HTML template based on user session.
+    """
     if 'user' in session:
         return render_template('redirect-authenticated_user.html')
     return render_template('authentication.html')
 
 @app.route('/api/v1/oauth/github/initiate', methods=['GET'])
 def initiate_github_login():
-    """Initiate GitHub OAuth login process."""
+    """
+    Initiate GitHub OAuth login process.
+    
+    Returns:
+        Response: Redirect to GitHub login page with authorization URL.
+    """
     if 'user' in session:
         return redirect(url_for('home'))
 
@@ -83,7 +125,12 @@ def initiate_github_login():
 
 @app.route('/api/v1/oauth/github/callback', methods=['GET'])
 def github_login_callback():
-    """Handle GitHub OAuth callback."""
+    """
+    Handle GitHub OAuth callback after the user grants authorization.
+    
+    Returns:
+        Response: A JSON response or redirection based on success or error.
+    """
     if request.args.get('state') != session.get('github_auth_request_state'):
         return jsonify({'error': 'State mismatch. Please try again.'})
 
@@ -122,7 +169,12 @@ def github_login_callback():
 
 @app.route('/email-verification')
 def email_verification():
-    """Email verification page."""
+    """
+    Display the email verification page.
+    
+    Returns:
+        str: Rendered email verification template.
+    """
     if 'user' in session:
         return redirect(url_for('home'))
     if not request.args.get('email') or not request.args.get('identifier'):
@@ -131,7 +183,12 @@ def email_verification():
 
 @app.route('/api/v1/email/send-login-code', methods=['POST'])
 def send_login_code():
-    """Send a one-time login code to the user's email."""
+    """
+    Send a one-time login code to the user's email address.
+    
+    Returns:
+        Response: JSON response with the status of the operation.
+    """
     email = request.json.get('email', '').lower()
     if not validate_email_format(email):
         return jsonify({'status': 'error', 'message': 'Invalid email address, please try again.'})
@@ -160,7 +217,12 @@ def send_login_code():
 
 @app.route('/api/v1/authentication/verify-code', methods=['POST'])
 def verify_code():
-    """Verify the one-time login code."""
+    """
+    Verify the one-time login code.
+    
+    Returns:
+        Response: JSON response with verification result.
+    """
     data = request.json
     identifier = data.get('identifier', '')
     code = data.get('code', '').upper()
@@ -209,7 +271,12 @@ def verify_code():
 
 @app.route('/api/v1/logout', methods=['GET'])
 def logout():
-    """Log out the user and clear session data."""
+    """
+    Log out the user and clear session data.
+    
+    Returns:
+        Response: Redirect to home after logging out.
+    """
     session.pop('user', None)
     return redirect(url_for('home'))
 
@@ -217,17 +284,35 @@ def logout():
 # Error Handlers
 @app.errorhandler(404)
 def page_not_found(e):
+    """
+    Custom error handler for 404 page not found error.
+    
+    Returns:
+        Response: JSON response indicating resource was not found.
+    """
     return jsonify({'error': 'The requested resource was not found on the server.'}), 404
 
 @app.errorhandler(500)
 def internal_server_error(e):
+    """
+    Custom error handler for 500 internal server error.
+    
+    Returns:
+        Response: JSON response indicating an internal server error.
+    """
     return jsonify({'error': 'An internal server error occurred. Please try again later.'}), 500
 
 # Utility Routes
 @app.route('/favicon.ico')
 def favicon():
+    """
+    Route for favicon redirection.
+    
+    Returns:
+        Response: Redirect to favicon image URL.
+    """
     return redirect("https://cdn.innovxchange.in/assets/images/favicon.ico")
 
 # Run the application
 if __name__ == '__main__':
-    app.run(port=5050, debug=True)
+    app.run(port=os.environ.get('PORT', 5000), debug=os.environ.get('ENVIROMENT') == 'development')
