@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication | InnovXCange</title>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      background-color: #110e07;
+      color: #ffdf90;
+    }
+
+    main {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 0;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      height: 50px;
+      border: none;
+      border-radius: 5px;
+      background-color: #ffdf90;
+      color: #110e07;
+      font: inherit;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    button svg {
+      margin-right: 10px;
+      height: 20px;
+      width: 20px;
+    }
+
+    .authentication_method_divider {
+      margin: 15px 0;
+      font-size: .8rem !important;
+      border-bottom: 1px solid #ffdf90;
+      position: relative;
+    }
+
+    .authentication_method_divider span {
+      background-color: #110e07;
+      padding: 0 10px;
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    input {
+      font: inherit;
+      font-size: .9rem;
+      font-weight: 600;
+      min-width: 300px;
+      padding: 10px 20px;
+      height: 50px;
+      border: none;
+      border-radius: 5px;
+      background-color: #FFFFFF;
+      color: #110e07;
+    }
+
+    input:focus,
+    button:focus {
+      outline: none;
+    }
+
+    .authentication_method_divider {
+      font-size: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main>
+    <img src="https://cdn.innovxchange.in/assets/images/innovxchange-logo.png" alt="InnovXchange Logo" width="50px"
+      height="50px">
+
+    <h1>Login to InnovXChange</h1>
+
+    <container>
+      <button class="github_authentication" onclick="window.location.href = '/api/v1/oauth/github/initiate';">
+        <svg aria-label="github" height="20" viewBox="0 0 14 14" width="20">
+          <path
+            d="M7 .175c-3.872 0-7 3.128-7 7 0 3.084 2.013 5.71 4.79 6.65.35.066.482-.153.482-.328v-1.181c-1.947.415-2.363-.941-2.363-.941-.328-.81-.787-1.028-.787-1.028-.634-.438.044-.416.044-.416.7.044 1.071.722 1.071.722.635 1.072 1.641.766 2.035.59.066-.459.24-.765.437-.94-1.553-.175-3.193-.787-3.193-3.456 0-.766.262-1.378.721-1.881-.065-.175-.306-.897.066-1.86 0 0 .59-.197 1.925.722a6.754 6.754 0 0 1 1.75-.24c.59 0 1.203.087 1.75.24 1.335-.897 1.925-.722 1.925-.722.372.963.131 1.685.066 1.86.46.48.722 1.115.722 1.88 0 2.691-1.641 3.282-3.194 3.457.24.219.481.634.481 1.29v1.926c0 .197.131.415.481.328C11.988 12.884 14 10.259 14 7.175c0-3.872-3.128-7-7-7z"
+            fill="currentColor" fill-rule="nonzero"></path>
+        </svg>Continue with GitHub</button>
+      <div class="authentication_method_divider"><span>or</span></div>
+      <input type="email" class="email_authentication" id="emailInput" placeholder="Registered Email Address" autofocus
+        onkeypress="if(event.keyCode==13) initiateEmailAuthentication();">
+      <button class="email_authentication" onclick="initiateEmailAuthentication();">
+        <svg data-testid="geist-icon" height="16" stroke-linejoin="round" viewBox="0 0 16 16" width="16"
+          style="color: currentcolor;">
+          <path fill-rule="evenodd" clip-rule="evenodd"
+            d="M13.2642 3.5H2.73578L8 8.01219L13.2642 3.5ZM1.5 4.41638V11.5C1.5 12.0523 1.94772 12.5 2.5 12.5H13.5C14.0523 12.5 14.5 12.0523 14.5 11.5V4.41638L8.48809 9.56944L8 9.98781L7.51191 9.56944L1.5 4.41638ZM0 2H1.5H14.5H16V3.5V11.5C16 12.8807 14.8807 14 13.5 14H2.5C1.11929 14 0 12.8807 0 11.5V3.5V2Z"
+            fill="currentColor"></path>
+        </svg>Continue with Email</button>
+    </container>
+  </main>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script>
+    async function initiateEmailAuthentication() {
+      const emailInput = document.getElementById("emailInput").value.trim();
+      if (!emailInput) {
+        Toastify({
+          text: "Invalid email address, please try again.",
+          style: {
+            position: "fixed",
+            bottom: "10px",
+            right: "10px",
+            width: "max-content",
+            borderRadius: "5px",
+            padding: "15px 20px",
+          },
+          duration: 5000,
+          gravity: "bottom",
+          position: "right",
+          backgroundColor: "#f44336",
+        }).showToast();
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/v1/email/send-login-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailInput })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.status === "success") {
+          const redirectUrl = `/email-verification?identifier=${result.identifier}&email=${encodeURIComponent(emailInput)}`;
+          window.location.href = redirectUrl;
+        } else {
+          Toastify({
+            text: result.message || "Something went wrong!",
+            destination: result.destination || window.location.href,
+            style: {
+              position: "fixed",
+              bottom: "10px",
+              right: "10px",
+              width: "max-content",
+              borderRadius: "5px",
+              padding: "15px 20px",
+            },
+            duration: 5000,
+            gravity: "bottom",
+            position: "right",
+            backgroundColor: "#f44336",
+          }).showToast();
+        }
+      } catch (error) {
+        Toastify({
+          text: "Network error! Please try again.",
+          style: {
+            position: "fixed",
+            bottom: "10px",
+            right: "10px",
+            width: "max-content",
+            borderRadius: "5px",
+            padding: "15px 20px",
+          },
+          duration: 5000,
+          gravity: "bottom",
+          position: "right",
+          backgroundColor: "#f44336",
+        }).showToast();
+      }
+    }
+  </script>
+
+</body>
+
+</html>
