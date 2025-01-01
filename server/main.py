@@ -95,6 +95,29 @@ def validate_email_format(email):
     """
     return '@' in email and '.' in email and ' ' not in email
 
+
+# Middleware
+@app.after_request
+def application_metrics(response):
+    """
+    Middleware to log application metrics for each request.
+    
+    Args:
+        response (Response): The response object for the request.
+    
+    Returns:
+        Response: The response object with metrics logged.
+    """
+    mongo_client['application_metrics']['request_logs'].insert_one({
+        'timestamp': datetime.now(),
+        'method': request.method,
+        'path': request.path,
+        'status_code': response.status_code,
+        'remote_address': request.remote_addr
+    })
+
+    return response
+
 # Routes
 @app.route('/')
 def home():
@@ -165,7 +188,7 @@ def github_login_callback():
         'user_display_name': user['user_profile']['user_display_name'],
         'user_roles': user['user_account']['user_roles']
     }
-    return redirect(url_for('home'))
+    return redirect(url_for('home'), code=302)
 
 @app.route('/email-verification')
 def email_verification():
@@ -315,4 +338,4 @@ def favicon():
 
 # Run the application
 if __name__ == '__main__':
-    app.run(port=os.environ.get('PORT', 5000), debug=os.environ.get('ENVIROMENT') == 'development')
+    app.run(port=os.environ.get('PORT', 5050), debug=os.environ.get('ENVIROMENT') == 'development')
