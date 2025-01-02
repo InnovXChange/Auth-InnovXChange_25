@@ -1,11 +1,12 @@
 import os
-from dotenv import load_dotenv
+import resend
 import secrets
 import requests
 from uuid import uuid4
-from datetime import datetime, timedelta
+from dotenv import load_dotenv
 from pymongo import MongoClient
 from flask_session import Session
+from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session
 
 # Load environment variables from .env file
@@ -16,8 +17,11 @@ GITHUB_AUTH_URL = "https://github.com/login/oauth/authorize"
 GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token"
 GITHUB_USER_URL = "https://api.github.com/user"
 GITHUB_EMAIL_URL = "https://api.github.com/user/emails"
-MAX_EMAIL_VERIFICATION_ATTEMPTS = 5
+MAX_EMAIL_VERIFICATION_ATTEMPTS = 3
 EMAIL_CODE_EXPIRY_HOURS = 24
+
+# Resend Configuration
+resend.api_key = os.environ["RESEND_API_KEY"]
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -94,6 +98,25 @@ def validate_email_format(email):
         bool: True if the email format is valid, False otherwise.
     """
     return '@' in email and '.' in email and ' ' not in email
+
+def send_email_login_code(email, code, user_display_name= "User"):
+    """
+    Send a one-time login code to the user's email address.
+    
+    Args:
+        email (str): The email address to send the code.
+        code (str): The one-time login code.
+    """
+    
+    params: resend.Emails.SendParams = {
+    "from": f"InnovXChange Hackathon <{os.environ['RESEND_SENDER_EMAIL']}>",
+    "to": email,
+    "subject": "InnovXChange Hackathon Login Code",
+    "html": open("server/templates/email_template.html").read().replace("{{code}}", code).replace("{{name}}", user_display_name)
+    }
+
+    return resend.Emails.send(params)
+
 
 
 # Middleware
@@ -216,16 +239,16 @@ def send_login_code():
     if not validate_email_format(email):
         return jsonify({'status': 'error', 'message': 'Invalid email address, please try again.'})
 
-    user = user_collection.find_one({'user_profile.user_email': email})
-    if not user:
-        return jsonify({'status': 'error', 'message': f"The email {email} is not yet registered for the InnovXChange Hackathon. If you have already registered, please join the WhatsApp group at https://chat.whatsapp.com/HGdWefCBxhaHgVcCbyn3Xc for further assistance.", 'destination': 'https://chat.whatsapp.com/HGdWefCBxhaHgVcCbyn3Xc'})
+    # user = user_collection.find_one({'user_profile.user_email': email})
+    # if not user:
+    #     return jsonify({'status': 'error', 'message': f"The email {email} is not yet registered for the InnovXChange Hackathon. If you have already registered, please join the WhatsApp group at https://chat.whatsapp.com/HGdWefCBxhaHgVcCbyn3Xc for further assistance.", 'destination': 'https://chat.whatsapp.com/HGdWefCBxhaHgVcCbyn3Xc'})
 
     attempts = verification_collection.count_documents({
         'email': email, 
         'created_at': {'$gte': datetime.now() - timedelta(hours=EMAIL_CODE_EXPIRY_HOURS)}
     })
     if attempts >= MAX_EMAIL_VERIFICATION_ATTEMPTS:
-        return jsonify({'status': 'error', 'message': 'Max verification attempts reached. Try later.'})
+        return jsonify({'status': 'error', 'message': 'You have exceeded the maximum number of verification attempts for this email address. Please try again later after some time.'})
 
     # Generate and store verification code
     code = ''.join(secrets.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for i in range(6))
@@ -235,7 +258,10 @@ def send_login_code():
     })
 
     # Simulated email (Replace with actual email sending logic)
-    print(f"Verification code for {email}: {code}")
+    send_email_response = send_email_login_code(email, code)
+
+    if send_email_response.get('id') is None:
+        return jsonify({'status': 'error', 'message': 'Failed to send the email verification code. Please try again later.'})
     return jsonify({'status': 'success', 'identifier': identifier, 'email': email})
 
 @app.route('/api/v1/authentication/verify-code', methods=['POST'])
