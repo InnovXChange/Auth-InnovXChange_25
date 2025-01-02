@@ -1,0 +1,7 @@
+# import os
+# from dotenv import load_dotenv
+flask
+flask_session
+pymongo
+python-dotenv
+requests
