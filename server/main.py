@@ -198,7 +198,7 @@ def github_login_callback():
     github_user['email'] = github_user.get('email') or fetch_github_user_email(access_token)
 
     # Check if the user is registered
-    user = user_collection.find_one({'user_account.user_github_username': github_user['login'].lower()})
+    user = user_collection.find_one({'user_profile.user_github_username': github_user['login'].lower()})
     if not user:
         return jsonify({
             'status': 'error',
@@ -364,4 +364,4 @@ def favicon():
 
 # Run the application
 if __name__ == '__main__':
-    app.run(port=os.environ.get('PORT', 5050), debug=os.environ.get('ENVIROMENT') == 'development')
+    app.run(port=os.environ.get('PORT', 3000), debug=os.environ.get('ENVIROMENT') == 'development', host='0.0.0.0' if os.environ.get('ENVIROMENT') == 'production' else 'localhost')
