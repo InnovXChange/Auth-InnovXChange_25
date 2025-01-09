@@ -1,3 +1,6 @@
+# Project: InnovXChange Hackathon
+# Environment: Production
+
 import os
 import resend
 import secrets
