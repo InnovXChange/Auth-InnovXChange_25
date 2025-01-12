@@ -4,15 +4,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Authentication | InnovXCange</title>
-  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <title>Authentication | InnovXchange</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap"
+    rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
     }
 
     body {
-      font-family: monospace;
+      font-family: 'JetBrains Mono', monospace;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -28,7 +29,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 20px;
     }
 
     h1 {
@@ -49,19 +50,20 @@
     }
 
     button {
-      padding: 10px 20px;
+      padding: 12px 24px;
       height: 50px;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       background-color: #ffdf90;
       color: #110e07;
       font: inherit;
-      font-size: .9rem;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       justify-content: center;
       align-items: center;
+      transition: background-color 0.3s ease;
     }
 
     button svg {
@@ -72,7 +74,7 @@
 
     .authentication_method_divider {
       margin: 15px 0;
-      font-size: .8rem !important;
+      font-size: 1rem;
       border-bottom: 1px solid #ffdf90;
       position: relative;
     }
@@ -88,24 +90,22 @@
 
     input {
       font: inherit;
-      font-size: .9rem;
+      font-size: 1rem;
       font-weight: 600;
       min-width: 300px;
-      padding: 10px 20px;
+      padding: 12px 24px;
       height: 50px;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       background-color: #FFFFFF;
       color: #110e07;
+      margin-top: 10px;
+      text-align: center;
     }
 
     input:focus,
     button:focus {
       outline: none;
-    }
-
-    .authentication_method_divider {
-      font-size: 1rem;
     }
   </style>
 </head>
@@ -134,27 +134,13 @@
     </container>
   </main>
 
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   <script>
+
+    // Refactored email authentication function
     async function initiateEmailAuthentication() {
       const emailInput = document.getElementById("emailInput").value.trim();
       if (!emailInput) {
-        Toastify({
-          text: "Invalid email address, please try again.",
-          style: {
-            position: "fixed",
-            bottom: "10px",
-            right: "10px",
-            left: "10px",
-            width: "max-content",
-            borderRadius: "5px",
-            padding: "15px 20px",
-          },
-          duration: 5000,
-          gravity: "bottom",
-          position: "right",
-          backgroundColor: "#f44336",
-        }).showToast();
+        alert("Invalid email address, please try again.");
         return;
       }
 
@@ -171,39 +157,10 @@
           const redirectUrl = `/email-verification?identifier=${result.identifier}&email=${encodeURIComponent(emailInput)}`;
           window.location.href = redirectUrl;
         } else {
-          Toastify({
-            text: result.message || "Something went wrong!",
-            destination: result.destination || window.location.href,
-            style: {
-              position: "fixed",
-              bottom: "10px",
-              right: "10px",
-              width: "max-content",
-              borderRadius: "5px",
-              padding: "15px 20px",
-            },
-            duration: 5000,
-            gravity: "bottom",
-            position: "right",
-            backgroundColor: "#f44336",
-          }).showToast();
+          alert(result.message || "Something went wrong!");
         }
       } catch (error) {
-        Toastify({
-          text: "Network error! Please try again.",
-          style: {
-            position: "fixed",
-            bottom: "10px",
-            right: "10px",
-            width: "max-content",
-            borderRadius: "5px",
-            padding: "15px 20px",
-          },
-          duration: 5000,
-          gravity: "bottom",
-          position: "right",
-          backgroundColor: "#f44336",
-        }).showToast();
+        alert("Network error! Please try again.");
       }
     }
   </script>

@@ -118,8 +118,10 @@ def send_email_login_code(email, code, user_display_name= "User"):
     "html": open("server/templates/email_template.html").read().replace("{{code}}", code).replace("{{name}}", user_display_name)
     }
 
-    return resend.Emails.send(params)
-
+    try:
+        return resend.Emails.send(params)
+    except Exception as e:
+        return {"id": None, "error": str(e)}
 
 
 # Middleware
