@@ -40,7 +40,9 @@ app.config.update(
     SESSION_MONGODB=mongo_client,
     SESSION_MONGODB_DB='user_sessions',
     SESSION_MONGODB_COLLECTION='sessions',
-    SESSION_COOKIE_NAME='X-IDENTIFIER',
+    SESSION_COOKIE_NAME='X-InnovXChange-Session',
+    SESSION_COOKIE_PATH='/',
+    SESSION_COOKIE_DOMAIN="*.innovxchange.in",
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax'
