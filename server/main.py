@@ -184,6 +184,7 @@ def github_login_callback():
     Returns:
         Response: A JSON response or redirection based on success or error.
     """
+
     if request.args.get('state') != session.get('github_auth_request_state'):
         return jsonify({'error': 'State mismatch. Please try again.'})
 
